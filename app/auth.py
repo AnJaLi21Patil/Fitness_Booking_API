@@ -15,9 +15,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 # --- JWT setup ---
 SECRET_KEY = "your_secret_key_here"  # change this to a secure secretfrom passlib.context import CryptContext
-from datetime import datetime, timedelta
-from typing import Optional
-from jose import jwt
+
 
 # --- Password hashing ---
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
