@@ -43,7 +43,7 @@ JWT (JSON Web Token) is used to secure the application.
 
 🧠 Redis & Background Scheduler
 🔴 Redis
-
+---
 Redis is used as an in-memory data store to support fast operations and background processing.
 
 In this project, Redis helps with:
@@ -69,7 +69,7 @@ Check and process past fitness classes
 Perform non-blocking operations without affecting API response time
 
 The scheduler starts automatically when the FastAPI application starts.
-
+---
 🔁 Why Redis + Scheduler?
 
 Keeps API requests fast and non-blocking
