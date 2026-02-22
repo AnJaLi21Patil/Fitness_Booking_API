@@ -1,46 +1,53 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 from datetime import datetime
-from app.redis_client import redis_client
+import pytz
+import redis
 from app.database import SessionLocal
-from app import models
+from app.models import FitnessClass
 
-scheduler = BackgroundScheduler(timezone="Asia/Kolkata")
+IST = pytz.timezone("Asia/Kolkata")
+
+redis_client = redis.Redis(host="localhost", port=6379, db=0)
+
+scheduler = BackgroundScheduler(timezone=IST)
 
 
-def handle_past_classes():
-    # Redis lock
-    lock = redis_client.setnx("past_class_job_lock", "1")
-    if not lock:
-        return
-
-    redis_client.expire("past_class_job_lock", 120)
-
+def fetch_upcoming_classes():
+    """Fetch upcoming classes and print in readable format"""
     db = SessionLocal()
-    try:
-        now = datetime.now()
+    now = datetime.now(IST)
+    upcoming = db.query(FitnessClass).filter(FitnessClass.date_time >= now).all()
 
-        past_classes = (
-            db.query(models.FitnessClass)
-            .filter(models.FitnessClass.date_time < now)
-            .all()
-        )
+    print("=== Upcoming Classes Check ===", now)
+    if not upcoming:
+        print("No upcoming classes found!")
+    else:
+        for cls in upcoming:
+            print(
+                f"ID: {cls.id}, Name: {cls.name}, Time: {cls.date_time}, "
+                f"Instructor: {cls.instructor}, Slots: {cls.available_slots}"
+            )
 
-        if past_classes:
-            print(f"⏱ Found {len(past_classes)} past classes")
+def fetch_past_classes():
+    """Fetch past classes and print in readable format"""
+    db = SessionLocal()
+    now = datetime.now(IST)
+    past = db.query(FitnessClass).filter(FitnessClass.date_time < now).all()
 
-    except Exception as e:
-        print("❌ Scheduler error:", e)
-
-    finally:
-        db.close()
-
+    print("=== Past Classes Check ===", now)
+    if not past:
+        print("No past classes found!")
+    else:
+        for cls in past:
+            print(
+                f"ID: {cls.id}, Name: {cls.name}, Time: {cls.date_time}, "
+                f"Instructor: {cls.instructor}, Slots: {cls.available_slots}"
+            )
 
 def start_scheduler():
-    scheduler.add_job(
-        handle_past_classes,
-        trigger="interval",
-        minutes=1,
-        id="handle_past_classes",
-        replace_existing=True,
-    )
+    """Call this from main.py to start the scheduler"""
+    scheduler.add_job(fetch_upcoming_classes, 'interval', minutes=1)
+    scheduler.add_job(fetch_past_classes, 'interval', minutes=1)
     scheduler.start()
+    print("Scheduler started...")
+    
