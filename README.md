@@ -9,7 +9,7 @@ This API allows users to sign up, log in, view classes, create classes, and book
 
 - **Language:** Python  
 - **Framework:** FastAPI  
-- **Database:** SQLite  
+- **Database:** SQLite  ,PostgreSQL
 - **ORM:** SQLAlchemy (optional)  
 - **Authentication:** JWT token-based authentication  
 - **Environment:** Python virtual environment (`venv`)
